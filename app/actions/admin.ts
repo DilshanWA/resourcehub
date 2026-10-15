@@ -1,6 +1,6 @@
 "use server";
 
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -10,7 +10,7 @@ export async function deleteResource(formData: FormData): Promise<void> {
   if (!user) {
     redirect("/login");
   }
-  if (user.role !== "ADMIN") {
+  if (!isAdmin(user)) {
     redirect("/dashboard/resources?error=unauthorized");
   }
 
@@ -33,4 +33,24 @@ export async function deleteResource(formData: FormData): Promise<void> {
   revalidatePath("/dashboard/resources");
   revalidatePath("/dashboard/newreserve");
   redirect("/dashboard/resources");
+}
+export async function getAllUsers() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+  if (!isAdmin(user)) {
+    redirect("/dashboard?error=unauthorized");
+  }
+
+  return await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 }

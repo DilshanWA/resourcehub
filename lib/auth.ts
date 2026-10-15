@@ -4,6 +4,14 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { SESSION_COOKIE } from "@/lib/auth-constants";
+import { UserRole } from "@/generated/prisma/enums";
+
+export type AuthenticatedUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+};
 
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 
@@ -44,7 +52,7 @@ export async function deleteSession() {
   cookieStore.delete(SESSION_COOKIE);
 }
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<AuthenticatedUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
 
@@ -68,4 +76,8 @@ export async function getCurrentUser() {
   }
 
   return session.user;
+}
+
+export function isAdmin(user: AuthenticatedUser | null): boolean {
+  return user?.role === UserRole.ADMIN;
 }

@@ -4,13 +4,15 @@ import { connection } from "next/server";
 export const instant = false;
 import { getResources } from "@/app/actions/resources";
 import { deleteResource } from "@/app/actions/admin";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser,isAdmin } from "@/lib/auth";
 import { Pencil, Trash } from "lucide-react";
 import Search from "@/app/components/Search";
 import ErrorModal from "@/app/components/ErrorModal";
 
 export default async function ResourcesPage({searchParams,}: {searchParams: Promise<{ q?: string; error?: string }>}) {
   await connection();
+  const user = await getCurrentUser();
+  const userIsAdmin = isAdmin(user);
 
   const params = await searchParams;
   const query = params.q?.trim() ?? "";
@@ -22,7 +24,6 @@ export default async function ResourcesPage({searchParams,}: {searchParams: Prom
           .some((value) => value!.toLowerCase().includes(query.toLowerCase()))
       )
     : allResources;
-  const user = await getCurrentUser();
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -36,7 +37,7 @@ export default async function ResourcesPage({searchParams,}: {searchParams: Prom
         </div>
         <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:items-center">
           <Search query={query} />
-          {user?.role === "ADMIN" && (
+          {userIsAdmin && (
             <Link
               href="/dashboard/resources/newresource"
               className="inline-flex h-11 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -138,7 +139,7 @@ export default async function ResourcesPage({searchParams,}: {searchParams: Prom
                         Reserve
                       </Link>
                     </td>
-                    {user?.role === "ADMIN" && (
+                    {userIsAdmin && (
                       <td className="px-6 text-left py-5">
                         <div className="flex items-center gap-3">
                           <Link

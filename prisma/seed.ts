@@ -5,13 +5,19 @@ import { hashPassword } from "../lib/password";
 const prisma = new PrismaClient();
 
 async function main() {
-  const user = await prisma.user.upsert({
-    where: { email: "demo@example.com" },
-    update: {},
+   const user = await prisma.user.upsert({
+    where: {
+      email: "arachchige@gmail.com", // Existing email in the database
+    },
+    update: {
+      name: "Arachchige",
+      email: "arachchige@gmail.com", // New email
+      passwordHash: hashPassword("password123"), // New password
+    },
     create: {
-      name: "Demo User",
-      email: "demo@example.com",
-      passwordHash: hashPassword("password"),
+      name: "Arachchige",
+      email: "arachchige@gmail.com",
+      passwordHash: hashPassword("password123"),
     },
   });
 
