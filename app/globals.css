@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: #f8fafc;
+}
+
+.auth-panel {
+  width: min(100%, 30rem);
+  margin: auto;
+  padding: 2.5rem 2rem;
+}
+
+.auth-visual {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 100vh;
+  padding: 4rem;
+  overflow: hidden;
+  background: linear-gradient(145deg, #312e81, #4f46e5 52%, #7c3aed);
+}
+
+.auth-visual::before,
+.auth-visual::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.1);
+}
+
+.auth-visual::before {
+  width: 28rem;
+  height: 28rem;
+  top: -8rem;
+  right: -7rem;
+}
+
+.auth-visual::after {
+  width: 18rem;
+  height: 18rem;
+  bottom: 8rem;
+  left: -7rem;
+}
+
+.brand-mark {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  background: #2A7FFE;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 800;
+  box-shadow: 0 10px 25px rgb(79 70 229 / 0.25);
+}
+
+.auth-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.auth-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  background: white;
+  padding: 0.75rem 0.875rem;
+  color: #0f172a;
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.15);
+}
+
+.auth-button {
+  width: 100%;
+  border-radius: 0.65rem;
+  background: #4f46e5;
+  padding: 0.8rem 1rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background 150ms ease;
+}
+
+.auth-button:hover { background: #4338ca; }
+.auth-button:disabled { cursor: not-allowed; opacity: 0.65; }
+
+@media (max-width: 767px) {
+  .auth-page { display: block; }
+  .auth-panel { padding: 2rem 1.25rem; }
+  .auth-visual { display: none; }
+}
