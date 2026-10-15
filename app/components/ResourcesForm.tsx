@@ -24,7 +24,7 @@ export default function ResourcesForm({
   initialLocation = "",
   initialDescription = "",
 }: ResourcesFormProps) {
-  const [state, formAction, pending] = useActionState(
+  const [state, formAction, pending ] = useActionState(
     resourceId ? updateResource : createResource,
     initialState,
   );

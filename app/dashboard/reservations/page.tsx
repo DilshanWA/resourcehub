@@ -1,14 +1,24 @@
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ArrowLeft } from "lucide-react";
-import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import Search from "@/app/components/Search";
 import Link from "next/link";
 
-export default async function ReservationsPage({searchParams,}: {searchParams: Promise<{ error?: string; success?: string }>;}) {
+export default async function ReservationsPage({searchParams,}: {searchParams: Promise<{ error?: string; success?: string; q?: string }>;}) {
   await connection();
   const params = await searchParams;
+  const query = params.q?.trim() ?? "";
   const reservations = await prisma.reservation.findMany({
+    where: query
+      ? {
+          OR: [
+            { resource: { name: { contains: query, mode: "insensitive" } } },
+            { resource: { type: { contains: query, mode: "insensitive" } } },
+            { resource: { location: { contains: query, mode: "insensitive" } } },
+            { user: { name: { contains: query, mode: "insensitive" } } },
+            { message: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
     include: {
       resource: { select: { name: true, type: true, location: true } },
       user: { select: { name: true } },
@@ -28,21 +38,22 @@ export default async function ReservationsPage({searchParams,}: {searchParams: P
             : null;
 
   return (
-    <div className="mx-auto max-w-[1500px]">
-    <div>
-    </div>
+    <div className="mx-auto max-w-7xl">
       <div className="mb-8">
-        <div className="flex justify-between">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reservations</h1>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">All reservations</h1>
             <p className="mt-2 text-gray-600">
-              Review your upcoming bookings and manage them in one place.
+              See when shared resources are being used.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href={`/dashboard/newreserve`} className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-              Create New Reservation
-            </Link>
+          <div>
+            <Search
+              action="/dashboard/reservations"
+              query={query}
+              placeholder="Search reservations"
+              ariaLabel="Search reservations"
+            />
           </div>
         </div>
         <hr className="border-gray-200 mt-4"></hr>
@@ -61,11 +72,27 @@ export default async function ReservationsPage({searchParams,}: {searchParams: P
         </p>
       )}
 
+      {query && (
+        <div className="mb-4 flex items-center justify-between gap-4 text-sm text-slate-500">
+          <p>
+            {reservations.length} {reservations.length === 1 ? "reservation" : "reservations"} matching{" "}
+            <span className="font-semibold text-slate-800">&quot;{query}&quot;</span>
+          </p>
+          <Link href="/dashboard/reservations" className="font-semibold text-indigo-600 hover:text-indigo-800">
+            Clear search
+          </Link>
+        </div>
+      )}
+
       {reservations.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">No reservations yet</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {query ? "No matching reservations" : "No reservations yet"}
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Browse Resources to reserve a workspace or piece of equipment.
+            {query
+              ? "Try a different resource, location, organizer, or message."
+              : "Browse Resources to reserve a workspace or piece of equipment."}
           </p>
         </div>
       ) : (
@@ -78,7 +105,7 @@ export default async function ReservationsPage({searchParams,}: {searchParams: P
                   <th scope="col" className="px-6 py-4 font-semibold">Resource</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Organizer</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Location</th>
-                  <th scope="col" className="px-6 py-4 font-semibold">Discription</th>
+                  <th scope="col" className="px-6 py-4 font-semibold">Message</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Start</th>
                   <th scope="col" className="px-6 py-4 font-semibold">End</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Status</th>

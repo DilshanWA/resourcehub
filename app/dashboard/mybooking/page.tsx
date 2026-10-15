@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import Search from "@/app/components/Search";
 
 export default async function ReservationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; q?: string }>;
 }) {
   await connection();
 
@@ -18,8 +19,21 @@ export default async function ReservationsPage({
   }
 
   const params = await searchParams;
+  const query = params.q?.trim() ?? "";
   const reservations = await prisma.reservation.findMany({
-    where: { userId: user.id },
+    where: {
+      userId: user.id,
+      ...(query
+        ? {
+            OR: [
+              { resource: { name: { contains: query, mode: "insensitive" } } },
+              { resource: { type: { contains: query, mode: "insensitive" } } },
+              { resource: { location: { contains: query, mode: "insensitive" } } },
+              { message: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     include: {
       resource: { select: { name: true, type: true, location: true } },
       user: { select: { name: true } },
@@ -41,11 +55,21 @@ export default async function ReservationsPage({
 
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Reservations</h1>
-        <p className="mt-2 text-gray-600">
-          Review your upcoming bookings and manage them in one place.
-        </p>
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">My bookings</h1>
+          <p className="mt-2 text-gray-600">
+            Review upcoming bookings, update details, or cancel when plans change.
+          </p>
+        </div>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <Search
+            action="/dashboard/mybooking"
+            query={query}
+            placeholder="Search my bookings"
+            ariaLabel="Search my bookings"
+          />
+        </div>
       </div>
 
       {message && (
@@ -61,12 +85,31 @@ export default async function ReservationsPage({
         </p>
       )}
 
+      {query && (
+        <div className="mb-4 flex items-center justify-between gap-4 text-sm text-slate-500">
+          <p>
+            {reservations.length} {reservations.length === 1 ? "booking" : "bookings"} matching{" "}
+            <span className="font-semibold text-slate-800">&quot;{query}&quot;</span>
+          </p>
+          <Link href="/dashboard/mybooking" className="font-semibold text-indigo-600 hover:text-indigo-800">
+            Clear search
+          </Link>
+        </div>
+      )}
+
       {reservations.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">No reservations yet</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {query ? "No matching bookings" : "No bookings yet"}
+          </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Browse Resources to reserve a workspace or piece of equipment.
+            {query
+              ? "Try a different resource, location, or message."
+              : "Browse the resource library to reserve a workspace or piece of equipment."}
           </p>
+          <Link href="/dashboard/resources" className="mt-5 inline-flex rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700">
+            Browse resources
+          </Link>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">

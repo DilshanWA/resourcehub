@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, CircleUserRound } from "lucide-react";
+import { Bell, CalendarDays, CircleUserRound, PackageSearch } from "lucide-react";
 
 type HeaderProps = {
   user: {
@@ -12,9 +12,22 @@ export default function Header({ user }: HeaderProps) {
   return (
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 md:px-8">
       <div>
-        
+        <Link href="/dashboard" className="flex items-center gap-2 md:hidden">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
+            <span className="text-sm font-bold">R</span>
+          </span>
+          <span className="font-bold text-slate-900">ResourceHub</span>
+        </Link>
       </div>
       <div className="flex items-center gap-3">
+        <nav aria-label="Quick navigation" className="mr-1 hidden items-center gap-1 sm:flex md:hidden">
+          <Link href="/dashboard/resources" aria-label="Resources" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+            <PackageSearch className="h-5 w-5" />
+          </Link>
+          <Link href="/dashboard/mybooking" aria-label="My bookings" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+            <CalendarDays className="h-5 w-5" />
+          </Link>
+        </nav>
         <button
           type="button"
           aria-label="Notifications"

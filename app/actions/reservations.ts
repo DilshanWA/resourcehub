@@ -208,7 +208,7 @@ export async function updateReservation(
       return { error: "This resource is no longer available." };
     }
     if (error instanceof Error && error.message === "RESERVATION_OVERLAP") {
-      return { error: "That resource is already reserved during the selected time." };
+      return { error: "That resource is already reserved during the selected time." }; 
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
       return { error: "This reservation changed while you were editing it. Please try again." };
